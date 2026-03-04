@@ -1,0 +1,1324 @@
+openapi: 3.0.3
+info:
+  title: forge-tracker API
+  description: REST API for forge-tracker ticket tracking, graph relationships, plans, and meta-plans.
+  version: v1.0.0
+
+paths:
+  # ---------------------------------------------------------------
+  # Tracking Sets
+  # ---------------------------------------------------------------
+  /api/v1/tracking-sets:
+    post:
+      operationId: createTrackingSet
+      summary: Create a tracking set
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTrackingSetRequest'
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrackingSet'
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    get:
+      operationId: listTrackingSets
+      summary: List all tracking sets
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TrackingSet'
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/tracking-sets/{ts}:
+    get:
+      operationId: getTrackingSet
+      summary: Get a tracking set by name
+      parameters:
+        - name: ts
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrackingSet'
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      operationId: deleteTrackingSet
+      summary: Delete a tracking set
+      parameters:
+        - name: ts
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ---------------------------------------------------------------
+  # Tickets
+  # ---------------------------------------------------------------
+  /api/v1/tracking-sets/{ts}/tickets:
+    post:
+      operationId: createTicket
+      summary: Create a ticket
+      parameters:
+        - name: ts
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTicketRequest'
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ticket'
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    get:
+      operationId: listTickets
+      summary: List tickets with optional filters
+      parameters:
+        - name: ts
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: assignee
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: labels
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Comma-separated labels. Match tickets with ALL specified labels.
+        - name: priority
+          in: query
+          required: false
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Ticket'
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/tracking-sets/{ts}/tickets/{id}:
+    get:
+      operationId: getTicket
+      summary: Get a ticket by ID
+      parameters:
+        - name: ts
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ticket'
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      operationId: updateTicket
+      summary: Update a ticket
+      parameters:
+        - name: ts
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTicketRequest'
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ticket'
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      operationId: deleteTicket
+      summary: Delete a ticket
+      parameters:
+        - name: ts
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ---------------------------------------------------------------
+  # Comments
+  # ---------------------------------------------------------------
+  /api/v1/tracking-sets/{ts}/tickets/{id}/comments:
+    post:
+      operationId: addComment
+      summary: Add a comment to a ticket
+      parameters:
+        - name: ts
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddCommentRequest'
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ---------------------------------------------------------------
+  # Edges
+  # ---------------------------------------------------------------
+  /api/v1/tracking-sets/{ts}/edges:
+    get:
+      operationId: listEdges
+      summary: List edges for a tracking set
+      parameters:
+        - name: ts
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: ticket
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filter edges where from or to matches this ticket ID.
+        - name: type
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filter by edge type (parent, blocks, relates-to).
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Edge'
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      operationId: addEdge
+      summary: Add an edge between tickets
+      parameters:
+        - name: ts
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EdgeRequest'
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Edge'
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      operationId: removeEdge
+      summary: Remove an edge between tickets
+      parameters:
+        - name: ts
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EdgeRequest'
+      responses:
+        "204":
+          description: Deleted
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ---------------------------------------------------------------
+  # Children / Blocking
+  # ---------------------------------------------------------------
+  /api/v1/tracking-sets/{ts}/tickets/{id}/children:
+    get:
+      operationId: getChildren
+      summary: Get child tickets of a parent
+      parameters:
+        - name: ts
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Ticket'
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/tracking-sets/{ts}/tickets/{id}/blocking:
+    get:
+      operationId: getBlocking
+      summary: Get tickets blocking this ticket
+      parameters:
+        - name: ts
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Ticket'
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ---------------------------------------------------------------
+  # Plans
+  # ---------------------------------------------------------------
+  /api/v1/tracking-sets/{ts}/plans:
+    post:
+      operationId: createPlan
+      summary: Create a plan
+      parameters:
+        - name: ts
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePlanRequest'
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Plan'
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    get:
+      operationId: listPlans
+      summary: List all plans in a tracking set
+      parameters:
+        - name: ts
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Plan'
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/tracking-sets/{ts}/plans/{id}:
+    get:
+      operationId: getPlan
+      summary: Get a plan by ID
+      parameters:
+        - name: ts
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Plan'
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      operationId: updatePlan
+      summary: Update a plan
+      parameters:
+        - name: ts
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePlanRequest'
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Plan'
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      operationId: deletePlan
+      summary: Delete a plan
+      parameters:
+        - name: ts
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ---------------------------------------------------------------
+  # Meta-Plans
+  # ---------------------------------------------------------------
+  /api/v1/tracking-sets/{ts}/metaplans:
+    post:
+      operationId: createMetaPlan
+      summary: Create a meta-plan
+      parameters:
+        - name: ts
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateMetaPlanRequest'
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MetaPlan'
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    get:
+      operationId: listMetaPlans
+      summary: List all meta-plans in a tracking set
+      parameters:
+        - name: ts
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MetaPlan'
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/tracking-sets/{ts}/metaplans/{id}:
+    get:
+      operationId: getMetaPlan
+      summary: Get a meta-plan by ID
+      parameters:
+        - name: ts
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MetaPlan'
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      operationId: updateMetaPlan
+      summary: Update a meta-plan
+      parameters:
+        - name: ts
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateMetaPlanRequest'
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MetaPlan'
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      operationId: deleteMetaPlan
+      summary: Delete a meta-plan
+      parameters:
+        - name: ts
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    # ---------------------------------------------------------------
+    # Domain types (use x-go-type to reference existing Go types)
+    # ---------------------------------------------------------------
+    Ticket:
+      x-go-type: types.Ticket
+      x-go-type-import:
+        path: github.com/alexandremahdhaoui/forge-tracker/internal/types
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        status:
+          type: string
+        priority:
+          type: integer
+        labels:
+          type: array
+          items:
+            type: string
+        annotations:
+          type: object
+          additionalProperties:
+            type: string
+        assignee:
+          type: string
+        created:
+          type: string
+          format: date-time
+        updated:
+          type: string
+          format: date-time
+        description:
+          type: string
+        comments:
+          type: array
+          items:
+            $ref: '#/components/schemas/Comment'
+
+    Comment:
+      x-go-type: types.Comment
+      x-go-type-import:
+        path: github.com/alexandremahdhaoui/forge-tracker/internal/types
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        author:
+          type: string
+        text:
+          type: string
+
+    Edge:
+      x-go-type: types.Edge
+      x-go-type-import:
+        path: github.com/alexandremahdhaoui/forge-tracker/internal/types
+      type: object
+      properties:
+        from:
+          type: string
+        to:
+          type: string
+        type:
+          type: string
+
+    TrackingSet:
+      x-go-type: types.TrackingSet
+      x-go-type-import:
+        path: github.com/alexandremahdhaoui/forge-tracker/internal/types
+      type: object
+      properties:
+        name:
+          type: string
+        graph:
+          $ref: '#/components/schemas/Graph'
+
+    Graph:
+      x-go-type: types.Graph
+      x-go-type-import:
+        path: github.com/alexandremahdhaoui/forge-tracker/internal/types
+      type: object
+      properties:
+        nodes:
+          type: array
+          items:
+            type: string
+        edges:
+          type: array
+          items:
+            $ref: '#/components/schemas/Edge'
+
+    Plan:
+      x-go-type: types.Plan
+      x-go-type-import:
+        path: github.com/alexandremahdhaoui/forge-tracker/internal/types
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        status:
+          type: string
+        priority:
+          type: integer
+        labels:
+          type: array
+          items:
+            type: string
+        annotations:
+          type: object
+          additionalProperties:
+            type: string
+        assignee:
+          type: string
+        created:
+          type: string
+          format: date-time
+        updated:
+          type: string
+          format: date-time
+        description:
+          type: string
+        comments:
+          type: array
+          items:
+            $ref: '#/components/schemas/Comment'
+        tasks:
+          type: array
+          items:
+            type: string
+
+    MetaPlan:
+      x-go-type: types.MetaPlan
+      x-go-type-import:
+        path: github.com/alexandremahdhaoui/forge-tracker/internal/types
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        status:
+          type: string
+        priority:
+          type: integer
+        labels:
+          type: array
+          items:
+            type: string
+        annotations:
+          type: object
+          additionalProperties:
+            type: string
+        assignee:
+          type: string
+        created:
+          type: string
+          format: date-time
+        updated:
+          type: string
+          format: date-time
+        description:
+          type: string
+        comments:
+          type: array
+          items:
+            $ref: '#/components/schemas/Comment'
+        stages:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetaPlanStage'
+        checkpoints:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetaCheckpoint'
+
+    MetaPlanStage:
+      x-go-type: types.MetaPlanStage
+      x-go-type-import:
+        path: github.com/alexandremahdhaoui/forge-tracker/internal/types
+      type: object
+      properties:
+        name:
+          type: string
+        status:
+          type: string
+        repos:
+          type: array
+          items:
+            $ref: '#/components/schemas/StageRepoRef'
+
+    StageRepoRef:
+      x-go-type: types.StageRepoRef
+      x-go-type-import:
+        path: github.com/alexandremahdhaoui/forge-tracker/internal/types
+      type: object
+      properties:
+        name:
+          type: string
+        planId:
+          type: string
+        tasksTotal:
+          type: integer
+        tasksDone:
+          type: integer
+
+    MetaCheckpoint:
+      x-go-type: types.MetaCheckpoint
+      x-go-type-import:
+        path: github.com/alexandremahdhaoui/forge-tracker/internal/types
+      type: object
+      properties:
+        name:
+          type: string
+        stage:
+          type: string
+        condition:
+          type: string
+        met:
+          type: boolean
+
+    # ---------------------------------------------------------------
+    # Request types (generated by oapi-codegen, no x-go-type)
+    # ---------------------------------------------------------------
+    CreateTrackingSetRequest:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+
+    CreateTicketRequest:
+      type: object
+      required:
+        - id
+        - title
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        status:
+          type: string
+        priority:
+          type: integer
+        labels:
+          type: array
+          items:
+            type: string
+        annotations:
+          type: object
+          additionalProperties:
+            type: string
+        assignee:
+          type: string
+        description:
+          type: string
+
+    UpdateTicketRequest:
+      type: object
+      required:
+        - title
+      properties:
+        title:
+          type: string
+        status:
+          type: string
+        priority:
+          type: integer
+        labels:
+          type: array
+          items:
+            type: string
+        annotations:
+          type: object
+          additionalProperties:
+            type: string
+        assignee:
+          type: string
+        description:
+          type: string
+
+    AddCommentRequest:
+      type: object
+      required:
+        - author
+        - text
+      properties:
+        author:
+          type: string
+        text:
+          type: string
+
+    EdgeRequest:
+      type: object
+      required:
+        - from
+        - to
+        - type
+      properties:
+        from:
+          type: string
+        to:
+          type: string
+        type:
+          type: string
+
+    CreatePlanRequest:
+      type: object
+      required:
+        - id
+        - title
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        status:
+          type: string
+        priority:
+          type: integer
+        labels:
+          type: array
+          items:
+            type: string
+        annotations:
+          type: object
+          additionalProperties:
+            type: string
+        assignee:
+          type: string
+        description:
+          type: string
+        tasks:
+          type: array
+          items:
+            type: string
+
+    UpdatePlanRequest:
+      type: object
+      required:
+        - title
+      properties:
+        title:
+          type: string
+        status:
+          type: string
+        priority:
+          type: integer
+        labels:
+          type: array
+          items:
+            type: string
+        annotations:
+          type: object
+          additionalProperties:
+            type: string
+        assignee:
+          type: string
+        description:
+          type: string
+        tasks:
+          type: array
+          items:
+            type: string
+
+    CreateMetaPlanRequest:
+      type: object
+      required:
+        - id
+        - title
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        status:
+          type: string
+        priority:
+          type: integer
+        labels:
+          type: array
+          items:
+            type: string
+        annotations:
+          type: object
+          additionalProperties:
+            type: string
+        assignee:
+          type: string
+        description:
+          type: string
+        stages:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetaPlanStage'
+        checkpoints:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetaCheckpoint'
+
+    UpdateMetaPlanRequest:
+      type: object
+      required:
+        - title
+      properties:
+        title:
+          type: string
+        status:
+          type: string
+        priority:
+          type: integer
+        labels:
+          type: array
+          items:
+            type: string
+        annotations:
+          type: object
+          additionalProperties:
+            type: string
+        assignee:
+          type: string
+        description:
+          type: string
+        stages:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetaPlanStage'
+        checkpoints:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetaCheckpoint'
+
+    # ---------------------------------------------------------------
+    # Error response
+    # ---------------------------------------------------------------
+    ErrorResponse:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string

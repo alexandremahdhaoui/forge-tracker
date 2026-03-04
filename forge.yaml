@@ -1,0 +1,57 @@
+name: forge-tracker
+
+envFile: .envrc
+artifactStorePath: .forge/artifact-store.yaml
+
+engines:
+  - alias: go-gen-openapi-with-license
+    type: builder
+    builder:
+      - engine: go://go-gen-openapi
+      - engine: go://generic-builder
+        spec:
+          command: bash
+          args: ["./hack/add-license-headers.sh"]
+
+  - alias: generate-mocks
+    type: builder
+    builder:
+      - engine: go://generic-builder
+        spec:
+          command: "rm"
+          args: ["-rf", "./internal/util/mocks"]
+      - engine: go://go-gen-mocks
+
+build:
+  - name: generate-rest-api
+    src: ./api/forge-tracker.v1.yaml
+    dest: ./internal/driver/rest
+    engine: alias://go-gen-openapi-with-license
+    spec:
+      sourceFile: ./api/forge-tracker.v1.yaml
+      destinationDir: ./internal/driver
+      server:
+        enabled: true
+        packageName: rest
+
+  - name: generate-mocks
+    src: .
+    engine: alias://generate-mocks
+
+  - name: forge-tracker
+    src: ./cmd/forge-tracker
+    dest: ./build/bin
+    engine: go://go-build
+
+test:
+  - name: lint-tags
+    runner: go://go-lint-tags
+
+  - name: lint-licenses
+    runner: go://go-lint-licenses
+
+  - name: lint
+    runner: go://go-lint
+
+  - name: unit
+    runner: go://go-test
