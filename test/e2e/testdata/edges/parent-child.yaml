@@ -1,0 +1,75 @@
+testCases:
+  - name: "parent-child-edges"
+    description: "Create parent/child tickets, add parent edge, get children, list edges, remove edge"
+    setup:
+      - id: create-ts
+        method: POST
+        path: /api/v1/tracking-sets
+        body:
+          name: "e2e-parent-child"
+        expectedStatus: 201
+
+    steps:
+      - id: create-parent
+        method: POST
+        path: /api/v1/tracking-sets/e2e-parent-child/tickets
+        body:
+          id: "parent-1"
+          title: "Parent Ticket"
+        expectedStatus: 201
+
+      - id: create-child
+        method: POST
+        path: /api/v1/tracking-sets/e2e-parent-child/tickets
+        body:
+          id: "child-1"
+          title: "Child Ticket"
+        expectedStatus: 201
+
+      - id: add-parent-edge
+        method: POST
+        path: /api/v1/tracking-sets/e2e-parent-child/edges
+        body:
+          from: "parent-1"
+          to: "child-1"
+          type: "parent"
+        expectedStatus: 201
+        expectedBody:
+          from: "parent-1"
+          to: "child-1"
+          type: "parent"
+
+      - id: get-children
+        method: GET
+        path: /api/v1/tracking-sets/e2e-parent-child/tickets/parent-1/children
+        expectedStatus: 200
+        expectedBody:
+          length: 1
+
+      - id: list-edges
+        method: GET
+        path: /api/v1/tracking-sets/e2e-parent-child/edges
+        expectedStatus: 200
+        expectedBody:
+          length: 1
+
+      - id: remove-edge
+        method: DELETE
+        path: /api/v1/tracking-sets/e2e-parent-child/edges
+        body:
+          from: "parent-1"
+          to: "child-1"
+          type: "parent"
+        expectedStatus: 204
+
+      - id: verify-edge-removed
+        method: GET
+        path: /api/v1/tracking-sets/e2e-parent-child/edges
+        expectedStatus: 200
+        expectedBody:
+          length: 0
+
+    teardown:
+      - method: DELETE
+        path: /api/v1/tracking-sets/e2e-parent-child
+        expectedStatus: 204

@@ -22,6 +22,41 @@ engines:
           args: ["-rf", "./internal/util/mocks"]
       - engine: go://go-gen-mocks
 
+  - alias: setup-tracker-e2e
+    type: testenv
+    testenv:
+      - engine: "go://testenv-kind"
+      - engine: "go://testenv-lcr"
+        spec:
+          enabled: true
+          namespace: testenv-lcr
+          imagePullSecretName: testenv-lcr-credentials
+          imagePullSecretNamespaces:
+            - default
+            - test
+          images:
+            - name: "local://forge-tracker-image:latest"
+            - name: "local://forge-tracker-test-runner-image:latest"
+      - engine: "go://testenv-helm-install"
+        spec:
+          charts:
+            - name: forge-tracker
+              sourceType: local
+              path: ./charts/forge-tracker
+              namespace: default
+              releaseName: forge-tracker
+              createNamespace: false
+              timeout: "5m"
+              values:
+                image:
+                  repository: "{{.Env.TESTENV_LCR_FQDN}}/forge-tracker-image"
+                  tag: latest
+                  pullPolicy: IfNotPresent
+                imagePullSecrets:
+                  - name: testenv-lcr-credentials
+                service:
+                  port: 8081
+
 build:
   - name: generate-rest-api
     src: ./api/forge-tracker.v1.yaml
@@ -43,6 +78,19 @@ build:
     dest: ./build/bin
     engine: go://go-build
 
+  - name: forge-tracker-test-runner
+    src: ./cmd/forge-tracker-test-runner
+    dest: ./build/bin
+    engine: go://go-build
+
+  - name: forge-tracker-image
+    src: ./containers/forge-tracker/Containerfile
+    engine: go://container-build
+
+  - name: forge-tracker-test-runner-image
+    src: ./containers/forge-tracker-test-runner/Containerfile
+    engine: go://container-build
+
 test:
   - name: lint-tags
     runner: go://go-lint-tags
@@ -55,3 +103,7 @@ test:
 
   - name: unit
     runner: go://go-test
+
+  - name: e2e
+    runner: "go://go-test"
+    testenv: "alias://setup-tracker-e2e"

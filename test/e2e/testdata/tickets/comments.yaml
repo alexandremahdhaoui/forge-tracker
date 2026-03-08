@@ -1,0 +1,44 @@
+testCases:
+  - name: "ticket-comments"
+    description: "Create ticket, add comment, verify comment appears on ticket"
+    setup:
+      - id: create-ts
+        method: POST
+        path: /api/v1/tracking-sets
+        body:
+          name: "e2e-comments"
+        expectedStatus: 201
+
+    steps:
+      - id: create-ticket
+        method: POST
+        path: /api/v1/tracking-sets/e2e-comments/tickets
+        body:
+          id: "ticket-with-comment"
+          title: "Ticket With Comments"
+        expectedStatus: 201
+
+      - id: add-comment
+        method: POST
+        path: /api/v1/tracking-sets/e2e-comments/tickets/ticket-with-comment/comments
+        body:
+          author: "test-user"
+          text: "This is a test comment"
+        expectedStatus: 201
+        expectedBody:
+          author: "test-user"
+          text: "This is a test comment"
+
+      - id: get-ticket-with-comment
+        method: GET
+        path: /api/v1/tracking-sets/e2e-comments/tickets/ticket-with-comment
+        expectedStatus: 200
+        expectedBody:
+          id: "ticket-with-comment"
+          comments:
+            length: 1
+
+    teardown:
+      - method: DELETE
+        path: /api/v1/tracking-sets/e2e-comments
+        expectedStatus: 204

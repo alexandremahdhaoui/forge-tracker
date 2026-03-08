@@ -1,0 +1,32 @@
+testCases:
+  - name: "create-and-list-tracking-set"
+    description: "Create a tracking set, get it, list all, verify it appears"
+    setup: []
+    steps:
+      - id: create-ts
+        method: POST
+        path: /api/v1/tracking-sets
+        body:
+          name: "e2e-create-ts"
+        expectedStatus: 201
+        expectedBody:
+          name: "e2e-create-ts"
+        capture:
+          tsName: name
+
+      - id: get-ts
+        method: GET
+        path: '/api/v1/tracking-sets/{{ index .Steps "create-ts" "tsName" }}'
+        expectedStatus: 200
+        expectedBody:
+          name: "e2e-create-ts"
+
+      - id: list-ts
+        method: GET
+        path: /api/v1/tracking-sets
+        expectedStatus: 200
+
+    teardown:
+      - method: DELETE
+        path: /api/v1/tracking-sets/e2e-create-ts
+        expectedStatus: 204

@@ -42,6 +42,7 @@ func TestPlanService_Create(t *testing.T) {
 	}
 
 	planStore.EXPECT().Create(mock.Anything, "ts", plan).Return(nil)
+	graphStore.EXPECT().AddNode(mock.Anything, "ts", "plan-1").Return(nil)
 	graphStore.EXPECT().AddEdge(mock.Anything, "ts", types.Edge{From: "plan-1", To: "task-1", Type: "parent"}).Return(nil)
 	graphStore.EXPECT().AddEdge(mock.Anything, "ts", types.Edge{From: "plan-1", To: "task-2", Type: "parent"}).Return(nil)
 
@@ -62,6 +63,7 @@ func TestPlanService_Create_NoTasks(t *testing.T) {
 	}
 
 	planStore.EXPECT().Create(mock.Anything, "ts", plan).Return(nil)
+	graphStore.EXPECT().AddNode(mock.Anything, "ts", "plan-1").Return(nil)
 
 	result, err := svc.Create(ctx, "ts", plan)
 	require.NoError(t, err)

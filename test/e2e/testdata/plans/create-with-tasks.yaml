@@ -1,0 +1,87 @@
+testCases:
+  - name: "plan-crud"
+    description: "Create plan with tasks, get, update, delete"
+    setup:
+      - id: create-ts
+        method: POST
+        path: /api/v1/tracking-sets
+        body:
+          name: "e2e-plans"
+        expectedStatus: 201
+
+      - id: create-ticket-1
+        method: POST
+        path: /api/v1/tracking-sets/e2e-plans/tickets
+        body:
+          id: "task-1"
+          title: "Task 1"
+        expectedStatus: 201
+
+      - id: create-ticket-2
+        method: POST
+        path: /api/v1/tracking-sets/e2e-plans/tickets
+        body:
+          id: "task-2"
+          title: "Task 2"
+        expectedStatus: 201
+
+    steps:
+      - id: create-plan
+        method: POST
+        path: /api/v1/tracking-sets/e2e-plans/plans
+        body:
+          id: "plan-1"
+          title: "Test Plan"
+          status: "draft"
+          tasks:
+            - "task-1"
+            - "task-2"
+        expectedStatus: 201
+        expectedBody:
+          id: "plan-1"
+          title: "Test Plan"
+          tasks:
+            length: 2
+        capture:
+          planId: id
+
+      - id: get-plan
+        method: GET
+        path: '/api/v1/tracking-sets/e2e-plans/plans/{{ index .Steps "create-plan" "planId" }}'
+        expectedStatus: 200
+        expectedBody:
+          id: "plan-1"
+          title: "Test Plan"
+          tasks:
+            contains:
+              - "task-1"
+              - "task-2"
+
+      - id: update-plan
+        method: PUT
+        path: /api/v1/tracking-sets/e2e-plans/plans/plan-1
+        body:
+          title: "Updated Plan"
+          status: "active"
+          tasks:
+            - "task-1"
+            - "task-2"
+        expectedStatus: 200
+        expectedBody:
+          title: "Updated Plan"
+          status: "active"
+
+      - id: delete-plan
+        method: DELETE
+        path: /api/v1/tracking-sets/e2e-plans/plans/plan-1
+        expectedStatus: 204
+
+      - id: verify-deleted
+        method: GET
+        path: /api/v1/tracking-sets/e2e-plans/plans/plan-1
+        expectedStatus: 404
+
+    teardown:
+      - method: DELETE
+        path: /api/v1/tracking-sets/e2e-plans
+        expectedStatus: 204

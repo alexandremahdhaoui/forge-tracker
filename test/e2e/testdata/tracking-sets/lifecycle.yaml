@@ -1,0 +1,32 @@
+testCases:
+  - name: "tracking-set-lifecycle"
+    description: "Create, get, list, delete a tracking set, verify 404 after deletion"
+    setup: []
+    steps:
+      - id: create-ts
+        method: POST
+        path: /api/v1/tracking-sets
+        body:
+          name: "e2e-lifecycle-ts"
+        expectedStatus: 201
+        expectedBody:
+          name: "e2e-lifecycle-ts"
+
+      - id: get-ts
+        method: GET
+        path: /api/v1/tracking-sets/e2e-lifecycle-ts
+        expectedStatus: 200
+        expectedBody:
+          name: "e2e-lifecycle-ts"
+
+      - id: delete-ts
+        method: DELETE
+        path: /api/v1/tracking-sets/e2e-lifecycle-ts
+        expectedStatus: 204
+
+      - id: verify-deleted
+        method: GET
+        path: /api/v1/tracking-sets/e2e-lifecycle-ts
+        expectedStatus: 404
+
+    teardown: []

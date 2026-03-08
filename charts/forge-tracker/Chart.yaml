@@ -1,0 +1,3 @@
+apiVersion: v2
+name: forge-tracker
+version: 0.1.0

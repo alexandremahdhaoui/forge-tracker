@@ -1,0 +1,25 @@
+FROM docker.io/golang:1.25 AS downloader
+WORKDIR /workdir
+COPY ./go.* ./
+RUN go mod download
+
+FROM downloader AS builder
+ARG GO_BUILD_LDFLAGS
+ARG NAME=forge-tracker-test-runner
+ARG INPUT_CMD="./cmd/${NAME}"
+ARG OUTPUT_BIN="/bin/${NAME}"
+WORKDIR /workdir
+COPY . ./
+RUN CGO_ENABLED=0 \
+    GOOS=linux \
+    go build \
+      -buildvcs=false \
+      -ldflags "${GO_BUILD_LDFLAGS}" \
+      -o "${OUTPUT_BIN}" \
+      "${INPUT_CMD}"
+
+FROM docker.io/alpine:3.20.1
+ARG NAME=forge-tracker-test-runner
+ARG OUTPUT_BIN="/bin/${NAME}"
+COPY --from=builder ${OUTPUT_BIN} ${OUTPUT_BIN}
+CMD ["/bin/forge-tracker-test-runner"]

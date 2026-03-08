@@ -1,0 +1,89 @@
+testCases:
+  - name: "metaplan-lifecycle"
+    description: "Create metaplan with stages and checkpoints, get, update, delete, verify 404"
+    setup:
+      - id: create-ts
+        method: POST
+        path: /api/v1/tracking-sets
+        body:
+          name: "e2e-metaplans"
+        expectedStatus: 201
+
+    steps:
+      - id: create-metaplan
+        method: POST
+        path: /api/v1/tracking-sets/e2e-metaplans/metaplans
+        body:
+          id: "mp-1"
+          title: "Test MetaPlan"
+          status: "draft"
+          stages:
+            - name: "stage-1"
+              status: "pending"
+              repos:
+                - name: "repo-a"
+                  planId: "plan-a"
+                  tasksTotal: 5
+                  tasksDone: 0
+          checkpoints:
+            - name: "checkpoint-1"
+              stage: "stage-1"
+              condition: "all-tasks-done"
+              met: false
+        expectedStatus: 201
+        expectedBody:
+          id: "mp-1"
+          title: "Test MetaPlan"
+          stages:
+            length: 1
+          checkpoints:
+            length: 1
+        capture:
+          mpId: id
+
+      - id: get-metaplan
+        method: GET
+        path: '/api/v1/tracking-sets/e2e-metaplans/metaplans/{{ index .Steps "create-metaplan" "mpId" }}'
+        expectedStatus: 200
+        expectedBody:
+          id: "mp-1"
+          title: "Test MetaPlan"
+
+      - id: update-metaplan
+        method: PUT
+        path: /api/v1/tracking-sets/e2e-metaplans/metaplans/mp-1
+        body:
+          title: "Updated MetaPlan"
+          status: "active"
+          stages:
+            - name: "stage-1"
+              status: "in-progress"
+              repos:
+                - name: "repo-a"
+                  planId: "plan-a"
+                  tasksTotal: 5
+                  tasksDone: 2
+          checkpoints:
+            - name: "checkpoint-1"
+              stage: "stage-1"
+              condition: "all-tasks-done"
+              met: false
+        expectedStatus: 200
+        expectedBody:
+          title: "Updated MetaPlan"
+          status: "active"
+
+      - id: delete-metaplan
+        method: DELETE
+        path: /api/v1/tracking-sets/e2e-metaplans/metaplans/mp-1
+        expectedStatus: 204
+
+      - id: verify-deleted
+        method: GET
+        path: /api/v1/tracking-sets/e2e-metaplans/metaplans/mp-1
+        expectedStatus: 404
+
+    teardown:
+      - method: DELETE
+        path: /api/v1/tracking-sets/e2e-metaplans
+        expectedStatus: 204

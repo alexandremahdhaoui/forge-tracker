@@ -1,0 +1,12 @@
+image:
+  repository: forge-tracker
+  tag: latest
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 8081
+
+storagePath: /data
+
+imagePullSecrets: []

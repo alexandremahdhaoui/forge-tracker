@@ -50,6 +50,9 @@ func (s *planService) Create(ctx context.Context, trackingSet string, plan types
 	if err := s.plans.Create(ctx, trackingSet, plan); err != nil {
 		return types.Plan{}, fmt.Errorf("creating plan: %w", err)
 	}
+	if err := s.graphs.AddNode(ctx, trackingSet, plan.ID); err != nil {
+		return types.Plan{}, fmt.Errorf("adding plan node to graph: %w", err)
+	}
 	for _, taskID := range plan.Tasks {
 		edge := types.Edge{
 			From: plan.ID,

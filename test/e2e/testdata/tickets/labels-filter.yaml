@@ -1,0 +1,70 @@
+testCases:
+  - name: "ticket-label-filtering"
+    description: "Create 3 tickets with different labels, filter by AND labels"
+    setup:
+      - id: create-ts
+        method: POST
+        path: /api/v1/tracking-sets
+        body:
+          name: "e2e-labels-filter"
+        expectedStatus: 201
+
+    steps:
+      - id: create-ticket-1
+        method: POST
+        path: /api/v1/tracking-sets/e2e-labels-filter/tickets
+        body:
+          id: "t-1"
+          title: "Ticket 1"
+          labels:
+            - "kind:task"
+            - "area:api"
+        expectedStatus: 201
+
+      - id: create-ticket-2
+        method: POST
+        path: /api/v1/tracking-sets/e2e-labels-filter/tickets
+        body:
+          id: "t-2"
+          title: "Ticket 2"
+          labels:
+            - "kind:task"
+            - "area:ui"
+        expectedStatus: 201
+
+      - id: create-ticket-3
+        method: POST
+        path: /api/v1/tracking-sets/e2e-labels-filter/tickets
+        body:
+          id: "t-3"
+          title: "Ticket 3"
+          labels:
+            - "kind:bug"
+            - "area:api"
+        expectedStatus: 201
+
+      - id: filter-kind-task
+        method: GET
+        path: /api/v1/tracking-sets/e2e-labels-filter/tickets?labels=kind:task
+        expectedStatus: 200
+        expectedBody:
+          length: 2
+
+      - id: filter-area-api
+        method: GET
+        path: /api/v1/tracking-sets/e2e-labels-filter/tickets?labels=area:api
+        expectedStatus: 200
+        expectedBody:
+          length: 2
+
+      - id: filter-and-labels
+        method: GET
+        path: /api/v1/tracking-sets/e2e-labels-filter/tickets?labels=kind:task,area:api
+        expectedStatus: 200
+        expectedBody:
+          length: 1
+
+    teardown:
+      - method: DELETE
+        path: /api/v1/tracking-sets/e2e-labels-filter
+        expectedStatus: 204

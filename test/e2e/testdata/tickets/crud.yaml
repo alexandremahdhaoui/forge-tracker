@@ -1,0 +1,77 @@
+testCases:
+  - name: "ticket-crud"
+    description: "Create, get, update, delete a ticket and verify 404 after deletion"
+    setup:
+      - id: create-ts
+        method: POST
+        path: /api/v1/tracking-sets
+        body:
+          name: "e2e-ticket-crud"
+        expectedStatus: 201
+
+    steps:
+      - id: create-ticket
+        method: POST
+        path: /api/v1/tracking-sets/e2e-ticket-crud/tickets
+        body:
+          id: "ticket-1"
+          title: "Test Ticket"
+          status: "open"
+          priority: 1
+          labels:
+            - "kind:task"
+            - "area:api"
+        expectedStatus: 201
+        expectedBody:
+          id: "ticket-1"
+          title: "Test Ticket"
+          status: "open"
+        capture:
+          ticketId: id
+
+      - id: get-ticket
+        method: GET
+        path: '/api/v1/tracking-sets/e2e-ticket-crud/tickets/{{ index .Steps "create-ticket" "ticketId" }}'
+        expectedStatus: 200
+        expectedBody:
+          id: "ticket-1"
+          title: "Test Ticket"
+          labels:
+            contains:
+              - "kind:task"
+              - "area:api"
+
+      - id: update-ticket
+        method: PUT
+        path: /api/v1/tracking-sets/e2e-ticket-crud/tickets/ticket-1
+        body:
+          title: "Updated Ticket"
+          status: "in-progress"
+          priority: 2
+        expectedStatus: 200
+        expectedBody:
+          title: "Updated Ticket"
+          status: "in-progress"
+
+      - id: verify-update
+        method: GET
+        path: /api/v1/tracking-sets/e2e-ticket-crud/tickets/ticket-1
+        expectedStatus: 200
+        expectedBody:
+          title: "Updated Ticket"
+          status: "in-progress"
+
+      - id: delete-ticket
+        method: DELETE
+        path: /api/v1/tracking-sets/e2e-ticket-crud/tickets/ticket-1
+        expectedStatus: 204
+
+      - id: verify-deleted
+        method: GET
+        path: /api/v1/tracking-sets/e2e-ticket-crud/tickets/ticket-1
+        expectedStatus: 404
+
+    teardown:
+      - method: DELETE
+        path: /api/v1/tracking-sets/e2e-ticket-crud
+        expectedStatus: 204
